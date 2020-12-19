@@ -70,8 +70,11 @@
       </div>
     </div>
     <div class="form-group row">
-      <div class="col-sm-10">
+      <div class="col-sm-12">
         <button type="submit" class="btn btn-primary">Registrar</button>
+        <div class="alert" style="display: none" ref="alert">
+          Usuario registrado!
+        </div>
       </div>
     </div>
   </form>
@@ -83,25 +86,52 @@ export default {
   data() {
     return {
       user: {
-        nombre: '',
-        apellido: '',
-        turno: '',
+        nombre: "",
+        apellido: "",
+        turno: "",
         jefe: false,
       },
+      timeout: null,
     };
   },
   methods: {
     async addUsuario() {
       try {
-        const query = await db.collection("users").add(this.user);
-        alert("User successfully created!");
+        await db.collection("users").add(this.user);
+        this.handleAlert(false);
+
         this.user.name = "";
         this.user.email = "";
         this.user.phone = "";
       } catch (e) {
-        console.log(error);
+        this.handleAlert(true);
       }
     },
+
+    handleAlert(error) {
+      const $alert = this.$refs.alert;
+
+      $alert.style.display = "block";
+      if (!error) {
+        $alert.classList.add("alert-success");
+        $alert.innerHTML = "Usuario registrado!!"
+      } else {
+        $alert.classList.add("alert-danger");
+        $alert.innerHTML = "Error!"
+      }
+
+      if (this.timeout != null) {
+        clearTimeout(this.timeout);
+      }
+
+      this.timeout = setTimeout(() => {
+        $alert.classList.remove("alert-success");
+        $alert.classList.remove("alert-danger");
+        $alert.style.display = "none";
+        this.timeout = null;
+      }, 2000);
+    },
+
     setTurno(e) {
       this.user.turno = e.target.value;
     },
